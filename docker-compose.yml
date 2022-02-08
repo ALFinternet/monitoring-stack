@@ -1,0 +1,45 @@
+---
+version: "3"
+services:
+  loki:
+    container_name: loki
+    image: grafana/loki:2.4.2
+    volumes:
+      - ${LOCVOL1}loki/loki-config.yml:/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:2.4.2
+    volumes:
+      - /var/log:/var/log
+      - ${LOCVOL1}promtail:/etc/promtail
+    #ports:
+      # promtail ONLY accepts TCP connections
+      #- "1514:1514" # this is only needed if you are going to send syslogs
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    user: ${PUID}
+    volumes:
+    - ${LOCVOL1}grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+#
+#
+#
+#
+# to add: prometheus
+# I could never get a syslog-ng container to work/run
+#
+#
+#
+networks:
+  default:
+    external:
+      name: ${NETCON}
